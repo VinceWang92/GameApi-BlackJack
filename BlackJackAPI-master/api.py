@@ -116,7 +116,7 @@ class blackJackApi(remote.Service):
                       name='make_move',
                       http_method='PUT')
     def make_move(self, request):
-        """Guess Higher or Lower and place a bet"""
+        """Make a dicision of Stand or Hit"""
         game = get_by_urlsafe(request.urlsafe_game_key, Game)
         
         my_dicision = request.dicision
@@ -218,7 +218,7 @@ class blackJackApi(remote.Service):
                       name='get_game_history',
                       http_method='GET')
     def get_game_history(self, request):
-        """Returns a summary of a game's guesses."""
+        """Returns final scores of dealer and player of a game."""
         game = get_by_urlsafe(request.urlsafe_game_key, Game)
         if not game:
             raise endpoints.NotFoundException('Game not found')
@@ -230,7 +230,7 @@ class blackJackApi(remote.Service):
                       name='get_high_scores',
                       http_method='PUT')
     def get_high_scores(self, request):
-        """Return all scores ordered by total points"""
+        """Return top scores ordered by all users' scores"""
         rlen = request.num_results
         scores = Score.query().order(-Score.scores)
         f_scores = scores.fetch(rlen)
