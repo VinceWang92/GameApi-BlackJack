@@ -1,0 +1,8 @@
+BlackJack Game Design
+
+This project is cool giving me a chance to program BlackJack with google AppEngine.
+Since I love play BlackJack at casino, I am familiar with the algorithm of “Stand and Hit”. I code this core game algorithm at the beginning. Then I think about some related APIs to this algorithm, like “get_game_history” and “get_user_scores”. When each game ends,it will return a message to game form. But some sentences of getting card should not put into game history, I decide to separate final scores and final round card values, and just put final scores to game history. 
+
+For get_user_scores api, that is pretty tricky. Every game is on game model, but I need to scores and dollars of the result put to User form. So I add a put_crores function in the game model to fulfill this relationship. 
+
+Additionally, the ranking function is different from the Guess Number example. Since the judgement of winning is not highest score, but the higher score than the dealer. Users can have some strategy to hold his number and expect the dealer’s number burst by counting math possibilities. So comparison of two side scores should be the best one to rank, which is dollars user won.   
