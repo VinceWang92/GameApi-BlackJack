@@ -1,5 +1,7 @@
 BlackJack API
 
+ - BlackJack Game API is inspired by Project 4 in Udacity's Full Stack Development Nanodegree.
+
 ##Game Description:
  - This BlackJack is a single player game, like common blackjack game but there are some slight difference in order to meet the api demand. 
 1.   When registering, you will automatically get 100 dollars, and each game you will bet 10 dollars. 
