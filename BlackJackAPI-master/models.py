@@ -5,6 +5,7 @@ import random
 from datetime import date
 from protorpc import messages
 from google.appengine.ext import ndb
+from utils import checkCard
 
 
 class User(ndb.Model):
@@ -58,8 +59,8 @@ class Game(ndb.Model):
         game = Game(user=user,
                     getcard = num1,
                     dealercard = num2,
-                    myscore = helper(num1),
-                    dealerscore = helper(num2), 
+                    myscore = checkCard(num1),
+                    dealerscore = checkCard(num2), 
                     dollars=10,
                     game_over=False)
         game.history = []
@@ -167,9 +168,3 @@ class StringMessage(messages.Message):
     """StringMessage-- outbound (single) string message"""
     message = messages.StringField(1, required=True)
 
-# if card's value is below 10, return the value; otherwise return 10
-def helper(card):
-        if (card > 10):
-            return 10
-        else:
-            return card  

@@ -33,3 +33,10 @@ def get_by_urlsafe(urlsafe, model):
     if not isinstance(entity, model):
         raise ValueError('Incorrect Kind')
     return entity
+
+def checkCard(card):
+    """ If card is Jack, Queen or King, return score 10 """
+    if card > 10:
+        return 10
+    else:
+        return card

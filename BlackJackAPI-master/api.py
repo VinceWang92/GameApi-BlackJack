@@ -10,7 +10,7 @@ from google.appengine.api import taskqueue
 from models import User, Game, Score
 from models import StringMessage, NewGameForm, GameForm, MakeMoveForm,\
     ScoreForms, GameForms, ScoreRequestForm, UserForm, UserForms
-from utils import get_by_urlsafe
+from utils import get_by_urlsafe, checkCard
 
 SCORE_REQUEST = endpoints.ResourceContainer(ScoreRequestForm)
 NEW_GAME_REQUEST = endpoints.ResourceContainer(NewGameForm)
@@ -23,11 +23,10 @@ USER_REQUEST = endpoints.ResourceContainer(user_name=messages.StringField(1,
                                            required=True),
                                            email=messages.StringField(2))
 
-MEMCACHE_AVERAGE_SCORE = 'AVERAGE_SCORE'
-
+# Create a card value array. 
 cardValues = ("Ace", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight",
               "Nine", "Ten", "Jack", "Queen", "King")
-dealer_score = 0
+
 
 @endpoints.api(name='blackJack', version='v1')
 class blackJackApi(remote.Service):
@@ -41,8 +40,7 @@ class blackJackApi(remote.Service):
         """Create a User. Requires a unique username"""
         if User.query(User.name == request.user_name).get():
             raise endpoints.ConflictException(
-                    'A User with that name already exists!')
-        print "#"    
+                    'A User with that name already exists!')  
         user = User(name=request.user_name, email=request.email, total_dollars=100)
         user.put()
 
@@ -128,7 +126,7 @@ class blackJackApi(remote.Service):
           msg = ""
           while (game.dealerscore < 16):
             dealercard = random.choice(range(1, 13))
-            game.dealerscore += helper(dealercard)
+            game.dealerscore += checkCard(dealercard)
             msg = msg + "Dealer got a %s. " %(cardValues[dealercard - 1])
           if (game.dealerscore > 21):
             msg1 =  "Dealer's score is 0, and you win the game"
@@ -138,41 +136,31 @@ class blackJackApi(remote.Service):
             game.put_Scores(game.user)
             return game.to_form(msg + msg1)
           else:
-            if (game.dealerscore> game.myscore):
+            if (game.dealerscore > game.myscore):
               msg1 = "Dealer's score is %d, and your score is %d. You lose!" %(game.dealerscore, game.myscore)
-              game.history.append(msg1)
               game.dollars = -game.dollars
-              game.game_over = True
-              game.put()
-              game.put_Scores(game.user)
-              return game.to_form(msg + msg1)
-            if (game.dealerscore < game.myscore):
+            elif (game.dealerscore < game.myscore):
               msg1 =  "Dealer's score is %d, and your score is %d. You win!" %(game.dealerscore, game.myscore)
-              game.history.append(msg1)
-              game.game_over = True
-              game.put()
-              game.put_Scores(game.user)
-              return game.to_form(msg + msg1) 
             else:
               msg1 = "Dealer's score is %d, and your score is %d. Tie!" %(game.dealerscore, game.myscore)
-              game.history.append(msg1)
               game.dollars = 0
-              game.game_over = True
-              game.put()
-              game.put_Scores(game.user)
-              return game.to_form(msg + msg1)  
+            game.history.append(msg1)
+            game.game_over = True
+            game.put()
+            game.put_Scores(game.user)
+            return game.to_form(msg + msg1) 
 
         if my_dicision == "hit":
           dealer_stand = False;
           if (game.dealerscore < 16):
             dealercard = random.choice(range(1, 13))
             game.dealercard = dealercard
-            game.dealerscore = helper(dealercard) + game.dealerscore 
+            game.dealerscore = checkCard(dealercard) + game.dealerscore 
           else:
             dealer_stand = True;
           mycard = random.choice(range(1, 13))
           game.getcard = mycard
-          game.myscore = helper(mycard) + game.myscore
+          game.myscore = checkCard(mycard) + game.myscore
           if (game.myscore > 21):
             game.myscore = 0
             msg1 = "Dealer's score is %d, and your score is %d. You lose!" %(game.dealerscore, game.myscore)
@@ -250,11 +238,5 @@ class blackJackApi(remote.Service):
         scores = Score.query(Score.user == user.key)
         return ScoreForms(items=[score.to_form() for score in scores])
 
-# If card is Jack, Queen or King, return score 10 
-def helper(card):
-  if card > 10:
-    return 10
-  else:
-    return card
 
 api = endpoints.api_server([blackJackApi])
